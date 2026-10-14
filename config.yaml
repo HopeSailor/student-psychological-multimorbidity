@@ -1,0 +1,37 @@
+project:
+  random_seed: 2026
+  test_size: 0.30
+  cv_folds: 5
+  bootstrap_resamples: 500
+
+data:
+  raw_dir: data/raw
+  interim_dir: data/interim
+  processed_dir: data/processed
+  figshare_article_id: 24052236
+  figshare_version: 2
+
+outputs:
+  tables_dir: outputs/tables
+  figures_dir: outputs/figures
+  models_dir: outputs/models
+  logs_dir: outputs/logs
+  reports_dir: outputs/reports
+
+modeling:
+  primary_metric: roc_auc
+  safety_sensitivity_target: 0.80
+  min_subgroup_n: 50
+  min_subgroup_cases: 10
+  n_jobs: -1
+  fast_mode: false
+
+multimorbidity:
+  markers:
+    sleep: SCI_Insomnia
+    stress: PSS_Stress
+    mania: MDQ_Mania
+    psychotic_experiences: P16_Psychotic_Exp_Sum
+    loneliness: UCLA3_Loneliness
+  joint_cv_folds: 5
+  joint_bootstrap_resamples: 500

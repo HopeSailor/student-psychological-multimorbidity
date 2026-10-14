@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+.mplconfig/
+
+# Human-participant and downloaded source data are never versioned.
+data/
+
+# All generated tables, figures, fitted models, logs, and row-level pilot outputs.
+outputs/
+
+# Local editor and operating-system files.
+.idea/
+.vscode/
