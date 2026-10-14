@@ -27,7 +27,8 @@ SHORT = {
 
 def figure1_framework(cfg):
     set_nature_style()
-    fig, ax = plt.subplots(figsize=(7.2, 2.5))
+    fig, ax = plt.subplots(figsize=(7.2, 1.45))
+    fig.subplots_adjust(left=0.01, right=0.99, top=0.96, bottom=0.04)
     ax.axis("off")
     blocks = [
         ("Public student\nmental-health data", 0.06, COLORS["grey"]),
@@ -39,7 +40,7 @@ def figure1_framework(cfg):
     for text, x, c in blocks:
         ax.text(
             x,
-            0.60,
+            0.52,
             text,
             ha="center",
             va="center",
@@ -52,8 +53,8 @@ def figure1_framework(cfg):
     for i in range(len(blocks) - 1):
         ax.annotate(
             "",
-            xy=(blocks[i + 1][1] - 0.075, 0.60),
-            xytext=(blocks[i][1] + 0.075, 0.60),
+            xy=(blocks[i + 1][1] - 0.075, 0.52),
+            xytext=(blocks[i][1] + 0.075, 0.52),
             xycoords=ax.transAxes,
             arrowprops=dict(arrowstyle="->", lw=1, color=COLORS["black"]),
         )
@@ -65,10 +66,16 @@ def figure1_framework(cfg):
 def figure2_upset(patterns, cfg):
     set_nature_style()
     p = patterns.sort_values("n", ascending=False).reset_index(drop=True)
-    fig = plt.figure(figsize=(7.2, 4.7))
+    fig = plt.figure(figsize=(7.2, 4.8))
     gs = fig.add_gridspec(
-        2, 2, width_ratios=[1.3, 4], height_ratios=[3, 1.6], hspace=0.05, wspace=0.08
+        2,
+        2,
+        width_ratios=[1.45, 4],
+        height_ratios=[3, 1.6],
+        hspace=0.08,
+        wspace=0.30,
     )
+    fig.subplots_adjust(left=0.18, right=0.985, top=0.94, bottom=0.11)
     ax_set = fig.add_subplot(gs[0, 0])
     ax_bar = fig.add_subplot(gs[0, 1])
     ax_dot = fig.add_subplot(gs[1, 1])
@@ -85,10 +92,10 @@ def figure2_upset(patterns, cfg):
     ax_bar.bar(x, p.n, color=COLORS["navy"], width=0.72)
     for i, n in enumerate(p.n):
         ax_bar.text(i, n + 10, str(n), ha="center", va="bottom", fontsize=6)
-    ax_bar.set_ylabel("Intersection size")
+    ax_bar.set_ylabel("Intersection size", labelpad=7)
     ax_bar.set_xticks([])
     clean_axis(ax_bar)
-    panel_label(ax_bar, "b", x=-0.06)
+    panel_label(ax_bar, "b", x=-0.10)
     for i, row in p.iterrows():
         ys = []
         for j, o in enumerate(OUTCOMES):
@@ -120,10 +127,12 @@ def figure3_burden_gradients(grad, cfg):
         "stress": "Stress",
         "sleep": "Poor sleep\n(32 - SCI)",
         "loneliness": "Loneliness",
-        "psychotic_experiences": "Psychotic experiences",
+        "psychotic_experiences": "Psychotic\nexperiences",
         "mania": "Mania",
     }
-    fig, axes = plt.subplots(1, 5, figsize=(7.2, 2.25), sharex=True)
+    fig, axes = plt.subplots(
+        1, 5, figsize=(7.2, 2.35), sharex=True, layout="constrained"
+    )
     for k, (ax, label) in enumerate(zip(axes, labels)):
         g = grad[grad.marker == label].sort_values("burden").copy()
         y = 32 - g["mean"] if label == "sleep" else g["mean"]
@@ -136,11 +145,11 @@ def figure3_burden_gradients(grad, cfg):
             capsize=2,
             color=COLORS["navy"],
         )
-        ax.set_title(display[label])
+        ax.set_title(display[label], pad=7)
         ax.set_xticks([0, 1, 2, 3])
         ax.set_xlabel("Risk burden")
         clean_axis(ax)
-        panel_label(ax, chr(97 + k), x=-0.2)
+        panel_label(ax, chr(97 + k), x=-0.24, y=1.13)
         if k == 0:
             ax.set_ylabel("Mean score (95% CI)")
     save_figure(fig, cfg["outputs"]["figures_dir"] / "figure3_risk_burden_gradients")
@@ -149,7 +158,14 @@ def figure3_burden_gradients(grad, cfg):
 def figure4_forest(effects, cfg):
     set_nature_style()
     markers = list(effects.marker.unique())
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 3.25), sharey=True)
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(7.2, 3.25),
+        sharey=True,
+        gridspec_kw={"width_ratios": [1.18, 1, 1], "wspace": 0.38},
+    )
+    fig.subplots_adjust(left=0.22, right=0.985, top=0.87, bottom=0.18)
     cols = [COLORS["navy"], COLORS["orange"], COLORS["red"]]
     for k, (ax, outcome, c) in enumerate(zip(axes, OUTCOMES, cols)):
         g = (
@@ -181,7 +197,7 @@ def figure4_forest(effects, cfg):
         ax.set_xlabel("Odds ratio per 1 SD")
         ax.set_title(SHORT[outcome])
         clean_axis(ax)
-        panel_label(ax, chr(97 + k), x=-0.18)
+        panel_label(ax, chr(97 + k), x=-0.20 if k == 0 else -0.12, y=1.14)
         display = {
             "sleep": "Sleep condition",
             "stress": "Stress",
@@ -189,7 +205,13 @@ def figure4_forest(effects, cfg):
             "psychotic_experiences": "Psychotic experiences",
             "loneliness": "Loneliness",
         }
-        ax.set_yticks(y, [display.get(m, m.replace("_", " ").title()) for m in markers])
+        ax.set_yticks(y)
+        if k == 0:
+            ax.set_yticklabels(
+                [display.get(m, m.replace("_", " ").title()) for m in markers]
+            )
+        else:
+            ax.tick_params(axis="y", labelleft=False)
         ax.invert_yaxis()
     save_figure(
         fig, cfg["outputs"]["figures_dir"] / "figure4_shared_outcome_specific_markers"
@@ -201,7 +223,11 @@ def figure5_profiles(profile_markers, profiles, cfg):
     profile_markers = profile_markers.copy()
     profile_markers["sleep"] = -profile_markers["sleep"]
     fig, axes = plt.subplots(
-        1, 2, figsize=(7.2, 3.4), gridspec_kw={"width_ratios": [1.1, 2.2]}
+        1,
+        2,
+        figsize=(7.2, 3.4),
+        gridspec_kw={"width_ratios": [1.15, 2.2]},
+        layout="constrained",
     )
     axes[0].barh(
         range(len(profiles)),
@@ -230,13 +256,13 @@ def figure5_profiles(profile_markers, profiles, cfg):
         "sleep": "Poor sleep",
         "stress": "Stress",
         "mania": "Mania",
-        "psychotic_experiences": "Psychotic experiences",
+        "psychotic_experiences": "Psychotic\nexperiences",
         "loneliness": "Loneliness",
     }
     axes[1].set_xticks(
         range(profile_markers.shape[1]),
         [display.get(x, x.replace("_", " ").title()) for x in profile_markers.columns],
-        rotation=35,
+        rotation=28,
         ha="right",
     )
     axes[1].set_yticks(range(profile_markers.shape[0]), [""] * profile_markers.shape[0])
@@ -249,7 +275,7 @@ def figure5_profiles(profile_markers, profiles, cfg):
 
 def figure6_joint_prediction(results, cfg):
     set_nature_style()
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.7))
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.7), layout="constrained")
     r = results.copy()
     labels = ["Independent"] + [f"Chain {i}" for i in range(1, len(r))]
     x = np.arange(len(r))
@@ -293,7 +319,7 @@ def figure7_model_validation(cfg):
         ("suicidal_behavior_risk", "SBQ-R indicator"),
     ]
     fig = plt.figure(figsize=(7.2, 4.4))
-    gs = fig.add_gridspec(2, 3, height_ratios=[1.25, 1], hspace=0.48, wspace=0.35)
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.25, 1], hspace=0.58, wspace=0.42)
     colors = {
         "logistic": COLORS["navy"],
         "elastic_net": COLORS["orange"],
@@ -392,7 +418,9 @@ def figure8_safety_utility(cfg):
         ("suicidal_behavior_risk", "SBQ-R indicator"),
     ]
     fig = plt.figure(figsize=(7.2, 5.0))
-    gs = fig.add_gridspec(2, 3, height_ratios=[1.3, 1], hspace=0.48, wspace=0.34)
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.3, 1], hspace=0.62, wspace=0.40)
+    legend_handles = None
+    legend_labels = None
     for j, (outcome, title) in enumerate(outcomes):
         ax = fig.add_subplot(gs[0, j])
         g = dca[dca.outcome == outcome]
@@ -414,9 +442,9 @@ def figure8_safety_utility(cfg):
         ax.set_xlabel("Threshold probability")
         if j == 0:
             ax.set_ylabel("Net benefit")
-            ax.legend(frameon=False, fontsize=5.5)
+            legend_handles, legend_labels = ax.get_legend_handles_labels()
         clean_axis(ax)
-        panel_label(ax, chr(97 + j), x=-0.18)
+        panel_label(ax, chr(97 + j), x=-0.20, y=1.13)
         ax2 = fig.add_subplot(gs[1, j])
         sr = sel[sel.outcome == outcome].iloc[0]
         h = th[
@@ -458,7 +486,19 @@ def figure8_safety_utility(cfg):
             fontsize=6,
         )
         clean_axis(ax2)
-        panel_label(ax2, chr(100 + j), x=-0.18)
+        panel_label(ax2, chr(100 + j), x=-0.23, y=1.16)
+    fig.legend(
+        legend_handles,
+        legend_labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.995),
+        ncol=3,
+        frameon=False,
+        fontsize=5.8,
+        columnspacing=1.5,
+        handlelength=2.2,
+    )
+    fig.subplots_adjust(top=0.88)
     save_figure(fig, cfg["outputs"]["figures_dir"] / "figure8_safety_utility")
 
 
@@ -476,7 +516,7 @@ def supplementary1_correlations(data, cfg):
     ]
     labels = ["GAD-7", "PHQ-9", "SCI", "PSS", "MDQ", "SBQ-R", "PQ-16", "UCLA"]
     corr = data[cols].corr()
-    fig, ax = plt.subplots(figsize=(4.6, 4.1))
+    fig, ax = plt.subplots(figsize=(4.6, 4.1), layout="constrained")
     mask = np.triu(np.ones_like(corr, dtype=bool), 1)
     shown = np.ma.array(corr.to_numpy(), mask=mask)
     im = ax.imshow(shown, cmap="RdBu_r", norm=TwoSlopeNorm(vmin=-1, vcenter=0, vmax=1))
@@ -512,7 +552,9 @@ def supplementary2_subgroups(cfg):
         ("anxiety_risk", "Anxiety"),
         ("suicidal_behavior_risk", "SBQ-R indicator"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.0), sharex=True)
+    fig, axes = plt.subplots(
+        1, 3, figsize=(7.2, 4.0), sharex=True, layout="constrained"
+    )
     for k, (ax, (outcome, title)) in enumerate(zip(axes, outcomes)):
         g = d[d.outcome == outcome].copy()
         g["label"] = g.subgroup.str.replace("_", " ") + "=" + g.level.astype(str)
@@ -553,7 +595,20 @@ def supplementary3_importance(cfg):
         ("anxiety_risk", "Anxiety"),
         ("suicidal_behavior_risk", "SBQ-R indicator"),
     ]
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 4.2), gridspec_kw={"wspace": 0.72})
+    fig, axes = plt.subplots(
+        1, 3, figsize=(7.2, 4.2), gridspec_kw={"wspace": 0.62}
+    )
+    fig.subplots_adjust(left=0.16, right=0.985, top=0.90, bottom=0.14)
+    feature_labels = {
+        "GAD7 Anxiety": "GAD-7 anxiety",
+        "PHQ9 Depression": "PHQ-9 depression",
+        "PSS Stress": "PSS-10 stress",
+        "SCI Insomnia": "SCI-8 sleep",
+        "UCLA3 Loneliness": "UCLA loneliness",
+        "P16 Psychotic Exp Sum": "PQ-16 experiences",
+        "MDQ Mania": "MDQ mania",
+        "Course Type": "Course type",
+    }
     for k, (ax, (outcome, title)) in enumerate(zip(axes, outcomes)):
         g = d[d.outcome == outcome].sort_values("mean_abs_importance")
         y = np.arange(len(g))
@@ -567,7 +622,10 @@ def supplementary3_importance(cfg):
             color=[COLORS["navy"], COLORS["orange"], COLORS["red"]][k],
         )
         ax.axvline(0, color=COLORS["grey"], lw=0.7, ls="--")
-        labels = [x.replace("_", " ") for x in g.feature]
+        labels = [
+            feature_labels.get(x.replace("_", " "), x.replace("_", " "))
+            for x in g.feature
+        ]
         ax.set_yticks(y, labels, fontsize=5.5)
         ax.set_xlabel("Permutation ΔAUROC")
         ax.set_title(title)
